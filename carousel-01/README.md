@@ -1,4 +1,4 @@
-## Slider组件
+## Carousel
 
 轮播组件
 
