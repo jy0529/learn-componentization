@@ -55,7 +55,7 @@
 #### installPlugin(plugin: Plugin)
     插件依赖注入
 #### callHook(hook: string, ...payload: Array<any>)
-    触发组件和插件上到钩子函数
+    触发组件和插件上的钩子函数
 
 #### mount(el: element)
     将render返回的HTML片段挂载到el上。
