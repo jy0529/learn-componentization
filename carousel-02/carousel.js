@@ -1,33 +1,41 @@
 class Carousel extends Component{
     constructor(config = {}) {
         super();
+
+        this.activeIndex = 0;
+        this.carouselItems = [];
+        this.timer = null;
+
         const defaultConfig = {
             autoplay: void 0,
             activeClassName: 'carousel-item--active',
+            images: [],
         };
         this._config = Object.assign({}, defaultConfig, config);
-        this.activeIndex = 0;
-        this.carouselItems = [];
-        this.initConfig();
+        this.images = this._config.images;
+
+        this.autoplay();
     }
 
-    initConfig() {
+    autoplay() {
         if (this._config.autoplay) {
-            this.autoplay();
+            this.timer = setInterval(() => {
+                this.next();
+            }, this._config.autoplay);
         }
     }
-    
-    autoplay() {
-        return setInterval(() => {
-            this.next();
-        }, this._config.autoplay);
+
+    stopAutoPlay() {
+        clearInterval(this.timer);
     }
 
     goto(index) {
+        this.stopAutoPlay();
         this.invalidateActiveItem();
         this.carouselItems[index].classList.add(this._config.activeClassName);
         this.activeIndex = index;
-        this.callHook('onSlide', index);
+        this.$emit('onSlide', index);
+        this.autoplay();
     }
 
     next() {
@@ -49,23 +57,13 @@ class Carousel extends Component{
     }
 
     render() {
-        return `
-            <div class="carousel-item carousel-item--active">
-                <img src="./images/1.jpg.webp" alt="虹润薄款无纸记录仪" class="carousel-item-img">
-            </div>
-            <div class="carousel-item">
-                <img src="./images/2.jpg.webp" alt="图书聚惠99元10件" class="carousel-item-img">
-            </div>
-            <div class="carousel-item">
-                <img src="./images/3.jpg.webp" alt="iphone11低至3899" class="carousel-item-img">
-            </div>
-            <div class="carousel-item">
-                <img src="./images/4.jpg.webp" alt="振德口罩物美价廉" class="carousel-item-img">
-            </div>
-            <div class="carousel-item">
-                <img src="./images/5.jpg.webp" alt="iQOOZ3性能先锋" class="carousel-item-img">
-            </div>
-        `;
+        return this.images.map((image, index) => {
+            return `
+                <div class="carousel-item ${ index === 0 ? 'carousel-item--active' : ''}">
+                    <img src="${image}" alt="虹润薄款无纸记录仪" class="carousel-item-img">
+                </div>
+            `;
+        }).reduce((str, html) => (str += html), '');
     }
 
     componentDidMount() {
@@ -74,14 +72,18 @@ class Carousel extends Component{
     }
 }
 
-class ButtonController {
+class Buttons extends Component {
+    constructor(...args) {
+        super(...args);
+    }
+
     render() {
         return `<div class="carousel-btn carousel-prev-btn">&lt;</div>
         <div class="carousel-btn carousel-next-btn">&gt;</div>`;
     }
 
-    action(carousel) {
-        let el = carousel.el;
+    componentDidMount() {
+        let el = this.el;
         const prevBtn = el.querySelector('.carousel-prev-btn');
         const nextBtn = el.querySelector('.carousel-next-btn');
 
@@ -95,8 +97,9 @@ class ButtonController {
     }
 }
 
-class CircleController {
-    constructor() {
+class Circles extends Component{
+    constructor(...args) {
+        super(...args);
         this.carouselCircles = [];
         this.activeClassName = 'carousel-circle--active';
     }
@@ -117,8 +120,8 @@ class CircleController {
         }
     }
 
-    action(carousel) {
-        const el = carousel.el;
+    componentDidMount() {
+        const el = this.el;
         this.carouselCircles = el.querySelectorAll('.carousel-circle');
         
         // init

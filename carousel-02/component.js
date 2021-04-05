@@ -1,34 +1,43 @@
 class Component {
-    constructor() {
-        this.plugins = [];
-        this.el = null;
+    constructor(el) {
+        this.components = [];
+        this.el = el;
     }
 
-    installPlugin(plugin) {
-        this.plugins.push(plugin);
+    registerSubComponents(components = []) {
+        components.forEach((Comp) => {
+            const container = document.createElement('div');
+            const component = new Comp(container);
+            component.$parent = this;
+            this.components.push(component);
+        });
     }
 
     callHook(hook, ...payload) {
-        this[hook] && this[hook](payload);
-        this.plugins.forEach((plugin) => plugin[hook] && plugin[hook](payload));
+        this[hook] && this[hook](...payload);
     }
 
-    _render() {
-        const pluginsHTML = this.plugins.map((plugin) => {
-            return plugin.render ? plugin.render(this) : plugin(this);
-        }).reduce((acc, html) => (acc + html), '');
-
-        return `
-            ${this.render()}
-            ${ pluginsHTML }
-        `;
+    $emit(event, ...payload) {
+        this[event] && this[event](...payload);
+        this.components.forEach((component) => component[event] && component[event](...payload));
+    }
+ 
+    render() {
+        /** override */
+        return '';
     }
 
     mount(el) {
-        this.el = el;
+        this.el = this.el === void 0 ? el : this.el;
         this.callHook('beforeComponentMount');
-        el.innerHTML = this._render();
-        this.plugins.forEach((plugin) => plugin.action(this));
-        this.callHook('componentDidMount');
+        this.el.innerHTML = this.render();
+        this.callHook('componentDidMount', this);
+
+        if (this.components.length > 0) {
+            this.components.forEach((component) => {
+                component.mount();
+                this.el.appendChild(component.el);
+            });
+        }
     }
 }
