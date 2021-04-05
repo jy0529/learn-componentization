@@ -60,7 +60,7 @@ class Carousel extends Component{
         return this.images.map((image, index) => {
             return `
                 <div class="carousel-item ${ index === 0 ? 'carousel-item--active' : ''}">
-                    <img src="${image}" alt="虹润薄款无纸记录仪" class="carousel-item-img">
+                    <img src="${image[0]}" alt="${image[1]}" class="carousel-item-img">
                 </div>
             `;
         }).reduce((str, html) => (str += html), '');
